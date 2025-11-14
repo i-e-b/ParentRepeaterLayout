@@ -62,4 +62,73 @@ public class LayoutRule
     /// Joining position on the 'next' sibling.
     /// </summary>
     public Joiner Prev { get; set; } = Joiner.TopLeft;
+
+    /// <summary>
+    /// Parse a description into a set of layout rules
+    /// </summary>
+    public static LayoutRule[] ParseRules(string description)
+    {
+        var result = new List<LayoutRule>();
+
+        var lines = description.Split('\r', '\n');
+
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            result.Add(ParseSingleRule(line));
+        }
+
+        return result.ToArray();
+    }
+
+    private static LayoutRule ParseSingleRule(string line)
+    {
+        var pairs = line.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var name   = "";
+        var width  = LayoutMeasurement.Zero;
+        var height = LayoutMeasurement.Zero;
+        var next   = Joiner.TopRight;
+        var prev   = Joiner.TopLeft;
+        var glue   = false;
+
+        foreach (var pair in pairs)
+        {
+            var bits = pair.Split('=', StringSplitOptions.TrimEntries);
+            if (bits.Length < 2) continue;
+
+            switch (bits[0].ToLowerInvariant())
+            {
+                case "name":
+                    name = bits[1];
+                    break;
+                case "width":
+                    width = LayoutMeasurement.Parse(bits[1]);
+                    break;
+                case "height":
+                    height = LayoutMeasurement.Parse(bits[1]);
+                    break;
+                case "next":
+                    next = Joiner.Parse(bits[1]);
+                    break;
+                case "prev":
+                    prev = Joiner.Parse(bits[1]);
+                    break;
+                case "glue":
+                    glue = bool.Parse(bits[1]);
+                    break;
+            }
+        }
+
+        return new LayoutRule
+        {
+            Name = name,
+            Width = width,
+            Height = height,
+            Glue = glue,
+            Next = next,
+            Prev = prev
+        };
+    }
 }

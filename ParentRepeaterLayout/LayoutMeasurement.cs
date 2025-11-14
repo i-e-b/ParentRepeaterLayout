@@ -5,7 +5,7 @@ namespace ParentRepeaterLayout;
 /// <summary>
 /// A measurement plus its unit of measure
 /// </summary>
-public class LayoutMeasurement
+public class LayoutMeasurement: IEquatable<LayoutMeasurement>, IComparable<LayoutMeasurement>
 {
     /// <summary>
     /// A zero-sized measurement.
@@ -16,12 +16,12 @@ public class LayoutMeasurement
     /// <summary>
     /// Value of the measurement
     /// </summary>
-    public double Value { get; set; }
+    public double Value { get; init; }
 
     /// <summary>
     /// Unit of the measurement
     /// </summary>
-    public UnitOfMeasure Unit { get; set; }
+    public UnitOfMeasure Unit { get; init; }
 
     /// <summary>
     /// Parse a string as a measurement.
@@ -32,6 +32,8 @@ public class LayoutMeasurement
     {
         int start = 0;
         int end   = -1;
+
+        if (s == "_") return Zero;
 
         var clean = new StringBuilder();
         for (int i = 0; i < s.Length; i++)
@@ -48,12 +50,12 @@ public class LayoutMeasurement
             }
             else if (char.IsNumber(c))
             {
-                end = i;
+                end = i+1;
                 clean.Append(c);
             }
             else if (c is '.' or ',')
             {
-                end = i;
+                end = i+1;
                 clean.Append('.');
             }
             else
@@ -70,21 +72,31 @@ public class LayoutMeasurement
             return Zero;
         }
 
-        var result = new LayoutMeasurement { Value = value, Unit = UnitOfMeasure.Pixel };
+        if (end >= s.Length) return new LayoutMeasurement { Value = value, Unit = UnitOfMeasure.Pixel };
 
-        if (end >= s.Length) return result;
+        var unitStr = s[end..].Trim().ToLowerInvariant();
 
-        var unit = s[end..].Trim().ToLowerInvariant();
-
-        result.Unit = unit switch
+        var unit = unitStr switch
         {
             "em" => UnitOfMeasure.Em,
             "%" => UnitOfMeasure.Percent,
-            "px" => UnitOfMeasure.Pixel,
-            _ => result.Unit
+            _ => UnitOfMeasure.Pixel
         };
 
-        return result;
+        return new LayoutMeasurement { Value = value, Unit = unit };
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return Unit switch
+        {
+            UnitOfMeasure.Invalid => "0",
+            UnitOfMeasure.Pixel => $"{Value}px",
+            UnitOfMeasure.Em => $"{Value}em",
+            UnitOfMeasure.Percent => $"{Value}%",
+            _ => "<invalid>"
+        };
     }
 
 
@@ -118,5 +130,41 @@ public class LayoutMeasurement
             Value = pixels,
             Unit = UnitOfMeasure.Pixel
         };
+    }
+
+    /// <inheritdoc />
+    public bool Equals(LayoutMeasurement? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+
+        if (Value == 0 && other.Value == 0) return true; // all zeros are created equal.
+
+        return Value.Equals(other.Value) && Unit == other.Unit;
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((LayoutMeasurement)obj);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Value, (int)Unit);
+    }
+
+    /// <inheritdoc />
+    public int CompareTo(LayoutMeasurement? other)
+    {
+        if (ReferenceEquals(this, other)) return 0;
+        if (other is null) return 1;
+        var valueComparison = Value.CompareTo(other.Value);
+        if (valueComparison != 0) return valueComparison;
+        return Unit.CompareTo(other.Unit);
     }
 }

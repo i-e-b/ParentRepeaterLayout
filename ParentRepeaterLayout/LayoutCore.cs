@@ -15,6 +15,10 @@ public class LayoutCore
         _rules = rules;
     }
 
+
+    /// <summary>
+    /// Perform a layout with the rule set and given tokens
+    /// </summary>
     public LayoutResult Layout(IEnumerable<LayoutToken> tokens)
     {
         throw new NotImplementedException();
