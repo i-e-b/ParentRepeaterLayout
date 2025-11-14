@@ -37,7 +37,7 @@ public class LayoutMeasurement
         for (int i = 0; i < s.Length; i++)
         {
             var c = s[i];
-            if (char.IsWhiteSpace(c) || c == '\t')
+            if (char.IsWhiteSpace(c))
             {
                 if (start > end) start = i;
                 else
@@ -74,7 +74,7 @@ public class LayoutMeasurement
 
         if (end >= s.Length) return result;
 
-        var unit = s[end..].Trim(' ', '\r', '\n', '\t').ToLowerInvariant();
+        var unit = s[end..].Trim().ToLowerInvariant();
 
         result.Unit = unit switch
         {
@@ -85,5 +85,38 @@ public class LayoutMeasurement
         };
 
         return result;
+    }
+
+
+    /// <summary>
+    /// Parse a string to a <see cref="LayoutMeasurement"/>
+    /// </summary>
+    public static implicit operator LayoutMeasurement(string toParse)
+    {
+        return Parse(toParse);
+    }
+
+    /// <summary>
+    /// Convert an integer to a number of pixels
+    /// </summary>
+    public static implicit operator LayoutMeasurement(int pixels)
+    {
+        return new LayoutMeasurement
+        {
+            Value = pixels,
+            Unit = UnitOfMeasure.Pixel
+        };
+    }
+
+    /// <summary>
+    /// Convert an double to a number of pixels
+    /// </summary>
+    public static implicit operator LayoutMeasurement(double pixels)
+    {
+        return new LayoutMeasurement
+        {
+            Value = pixels,
+            Unit = UnitOfMeasure.Pixel
+        };
     }
 }

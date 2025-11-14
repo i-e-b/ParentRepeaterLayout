@@ -79,4 +79,19 @@ public class Joiner
     /// the offset is calculated based on the parent element's size.
     /// </summary>
     public LayoutMeasurement YOffset { get; set; } = LayoutMeasurement.Zero;
+
+    /// <summary>
+    /// Create a new joiner based on this one,
+    /// with a different offset
+    /// </summary>
+    public Joiner Offset(LayoutMeasurement dx, LayoutMeasurement dy)
+    {
+        return new Joiner
+        {
+            XPos = XPos,
+            YPos = YPos,
+            XOffset = dx,
+            YOffset = dy
+        };
+    }
 }
