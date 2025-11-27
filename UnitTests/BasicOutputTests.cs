@@ -62,7 +62,7 @@ name=Column, width=31%,   height=100%, next=TR 3.3% 0,  prev=TL
         var sampleRules = LayoutRule.ParseRules(
             """
 
-            name=Root,   width=600px, height=400px
+            name=Root,   width=100%, height=100%
             name=Column, width=31%,   height=100%, next=TR 3.3% 0, prev=TL
             name=Line,                             next=BL 0 0.5em
             name=Word,                             next=TR 0.5em 0
@@ -70,7 +70,7 @@ name=Column, width=31%,   height=100%, next=TR 3.3% 0,  prev=TL
 
             """);
 
-        var emHeight = FontGuess.MeasureStrings(10, "M");
+        var em = FontGuess.MeasureCharacter(10, 'M');
 
         var tokenSet = SampleData.ExampleInput.Select(c =>
         {
@@ -84,10 +84,10 @@ name=Column, width=31%,   height=100%, next=TR 3.3% 0,  prev=TL
             }
 
             var charWidth = FontGuess.MeasureCharacter(10, c);
-            return new LayoutToken { Break = 0, Content = c, Width = charWidth, Height = emHeight };
+            return new LayoutToken { Break = 0, Content = c, Width = charWidth, Height = em };
         }).ToList();
 
-        var subject = new LayoutCore(sampleRules);
+        var subject = new LayoutCore(sampleRules, 640, 480, em);
 
         var layout = subject.Layout(tokenSet);
 
